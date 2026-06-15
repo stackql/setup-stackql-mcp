@@ -1,0 +1,53 @@
+# Example: zero-secrets starter - GitHub org posture from public data.
+#
+# The "try it in 2 minutes" example. The only secret it needs is
+# ANTHROPIC_API_KEY; the github provider runs in null_auth mode, which reads
+# public data with no token at all.
+#
+# null_auth covers public data only. For private repos or branch-protection
+# details you need a token via basic auth - see the note below. The built-in
+# GITHUB_TOKEN is scoped to the current repo, so org-wide reads across other
+# repos need a PAT or GitHub App token with org read.
+
+name: org-posture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  posture:
+    runs-on: ubuntu-latest
+    steps:
+      - id: stackql
+        uses: stackql/setup-stackql-mcp@v1
+        with:
+          mode: read_only
+          auth: '{"github":{"type":"null_auth"}}'
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Using stackql, list the public repositories in the stackql org and
+            summarise their posture as a markdown table: repo name, visibility,
+            whether archived, whether it has a license, open issue count, and how
+            recently it was pushed to. Flag any that look unmaintained
+            (archived, no license, or no push in over a year).
+          claude_args: |
+            --mcp-config ${{ steps.stackql.outputs.mcp-config-file }}
+            --allowedTools 'mcp__stackql__*'
+
+# Going further - authenticated reads (private repos, branch protection):
+#   Supply a PAT or GitHub App token with org read via basic auth. stackql's
+#   github provider uses basic auth (username + token); pass the token through
+#   an env var the auth JSON names, for example:
+#
+#     env:
+#       STACKQL_GITHUB_USERNAME: ${{ github.actor }}
+#       STACKQL_GITHUB_PASSWORD: ${{ secrets.GH_ORG_READ_TOKEN }}
+#     with:
+#       auth: '{"github":{"type":"basic","credentialsenvvar":"STACKQL_GITHUB_PASSWORD"}}'

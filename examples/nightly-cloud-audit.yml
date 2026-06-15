@@ -1,0 +1,44 @@
+# Example: nightly AWS security audit -> GitHub issue.
+#
+# Copy this into .github/workflows/ in your repo. Requires repo secrets:
+#   ANTHROPIC_API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#
+# read_only mode means the agent can query AWS but cannot mutate it, regardless
+# of what ends up in the prompt.
+
+name: nightly-cloud-audit
+
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - id: stackql
+        uses: stackql/setup-stackql-mcp@v1
+        with:
+          mode: read_only
+          auth: '{"aws":{"type":"aws_signing_v4","credentialsenvvar":"AWS_SECRET_ACCESS_KEY","keyID":"AWS_ACCESS_KEY_ID"}}'
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Using the stackql tools, audit our AWS account for: S3 buckets without
+            encryption or with public access, security groups open to 0.0.0.0/0 on
+            sensitive ports, and IAM users without MFA. Open a GitHub issue
+            "Cloud audit <date>" summarising findings WITH the SQL you ran as
+            evidence. If nothing is found, do not open an issue.
+          claude_args: |
+            --mcp-config ${{ steps.stackql.outputs.mcp-config-file }}
+            --allowedTools 'mcp__stackql__*'

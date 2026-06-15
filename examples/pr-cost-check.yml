@@ -1,0 +1,42 @@
+# Example: estimate the monthly cost of a Terraform plan on a PR (Google).
+#
+# Copy this into .github/workflows/ in your repo. Requires repo secrets:
+#   ANTHROPIC_API_KEY, GCP_SA_KEY (a Google service-account key JSON)
+#
+# Expects terraform/plan.json to exist in the PR (generate it in an earlier
+# step or a prior job with `terraform show -json`).
+
+name: pr-cost-check
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: echo '${{ secrets.GCP_SA_KEY }}' > /tmp/sa.json
+
+      - id: stackql
+        uses: stackql/setup-stackql-mcp@v1
+        with:
+          mode: read_only
+          auth: '{"google":{"type":"service_account","credentialsfilepath":"/tmp/sa.json"}}'
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read terraform/plan.json in this PR. Using stackql pricing tools,
+            estimate the monthly cost of the resources being created and post a PR
+            comment with a per-resource breakdown and total.
+          claude_args: |
+            --mcp-config ${{ steps.stackql.outputs.mcp-config-file }}
+            --allowedTools 'mcp__stackql__*'

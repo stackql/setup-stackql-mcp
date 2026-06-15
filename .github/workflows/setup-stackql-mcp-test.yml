@@ -1,0 +1,85 @@
+name: 'setup stackql mcp test'
+
+on:
+  push:
+    branches:
+    - main
+    - 'develop-**'
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-test-matrix:
+    name: ${{ matrix.os }} (version ${{ matrix.version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Both the floating 'latest' and the currently pinned release. The
+        # github null_auth fixture needs no secrets, so this runs credential-free.
+        version: [latest, 0.10.500]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup StackQL MCP
+      id: setup
+      uses: ./
+      with:
+        version: ${{ matrix.version }}
+
+    - name: Assert mcp-config is valid JSON
+      env:
+        MCP_CONFIG: ${{ steps.setup.outputs.mcp-config }}
+      run: |
+        echo "$MCP_CONFIG" | python -m json.tool > /dev/null
+        echo "mcp-config is valid JSON"
+
+    - name: Assert mcp-config-file exists and matches mcp-config
+      env:
+        MCP_CONFIG: ${{ steps.setup.outputs.mcp-config }}
+        MCP_CONFIG_FILE: ${{ steps.setup.outputs.mcp-config-file }}
+      run: |
+        test -f "$MCP_CONFIG_FILE" || { echo "mcp-config-file missing: $MCP_CONFIG_FILE"; exit 1; }
+        python - <<'EOF'
+        import json, os
+        on_disk = json.load(open(os.environ["MCP_CONFIG_FILE"], encoding="utf-8"))
+        as_string = json.loads(os.environ["MCP_CONFIG"])
+        assert on_disk == as_string, "mcp-config-file does not match mcp-config"
+        print("mcp-config-file exists and matches mcp-config")
+        EOF
+
+    - name: Assert binary-path exists and runs
+      env:
+        BIN: ${{ steps.setup.outputs.binary-path }}
+      run: |
+        test -x "$BIN" || { echo "binary-path is not executable: $BIN"; exit 1; }
+        "$BIN" --version
+
+    - name: Smoke test via emitted mcp-config
+      env:
+        MCP_CONFIG: ${{ steps.setup.outputs.mcp-config }}
+      run: |
+        python - <<'EOF'
+        import importlib.util, json, os
+        cfg = json.loads(os.environ["MCP_CONFIG"])
+        server = cfg["mcpServers"]["stackql"]
+        spec = importlib.util.spec_from_file_location("smoke", "scripts/smoke-test.py")
+        smoke = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(smoke)
+        smoke.run_command([server["command"], *server["args"]])
+        EOF

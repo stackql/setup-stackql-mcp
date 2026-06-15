@@ -1,0 +1,23 @@
+# Example: use the installed stackql binary directly, no agent.
+#
+# setup-stackql-mcp installs the same signed stackql binary as setup-stackql and
+# adds it to PATH, so you can run queries with plain `stackql exec` steps. Reach
+# for this when you do not need an MCP/agent step at all.
+
+name: use-binary-directly
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: stackql/setup-stackql-mcp@v1
+
+      - run: |
+          stackql exec "REGISTRY PULL github"
+          stackql exec "SHOW SERVICES IN github"
