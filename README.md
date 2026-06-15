@@ -93,17 +93,20 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    # Cloud credentials are for the stackql MCP server, not for Claude. The agent
+    # step spawns the server as a child process, so it inherits these job-level
+    # vars; stackql picks up the standard AWS_* env vars implicitly (no auth:
+    # input needed). Claude only speaks MCP.
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - id: stackql
         uses: stackql/setup-stackql-mcp@v1
         with:
           mode: read_only
-          auth: '{"aws":{"type":"aws_signing_v4","credentialsenvvar":"AWS_SECRET_ACCESS_KEY","keyID":"AWS_ACCESS_KEY_ID"}}'
 
       - uses: anthropics/claude-code-action@v1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
@@ -195,6 +198,12 @@ Full file: [examples/use-binary-directly.yml](examples/use-binary-directly.yml).
           stackql exec "REGISTRY PULL github"
           stackql exec "SHOW SERVICES IN github"
 ```
+
+## Provider credentials
+
+stackql reads provider credentials from standard environment variables - the same ones Terraform and the provider SDKs already look for (for example `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`, `ARM_CLIENT_ID`/`ARM_CLIENT_SECRET`, and so on across 40+ providers). Source them from GitHub Actions secrets at the job level so they live in the stackql MCP server's context; the server uses them to call the remote provider on the agent's behalf. Claude never handles the credentials - it only speaks MCP to the server.
+
+Because of this, most providers need no `auth:` input at all - just make the standard env vars available to the job. Set `auth:` only to point stackql at something non-standard, such as a service-account key file path or `null_auth` for public, credential-free reads (see the [examples](examples/)).
 
 ## Security
 

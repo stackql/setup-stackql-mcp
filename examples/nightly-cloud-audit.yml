@@ -20,17 +20,20 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    # Cloud credentials are for the stackql MCP server, not for Claude. The agent
+    # step spawns the server as a child process, so it inherits these job-level
+    # vars; stackql picks up the standard AWS_* env vars implicitly (no auth:
+    # input needed). Claude only speaks MCP.
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - id: stackql
         uses: stackql/setup-stackql-mcp@v1
         with:
           mode: read_only
-          auth: '{"aws":{"type":"aws_signing_v4","credentialsenvvar":"AWS_SECRET_ACCESS_KEY","keyID":"AWS_ACCESS_KEY_ID"}}'
 
       - uses: anthropics/claude-code-action@v1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
