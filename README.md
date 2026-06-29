@@ -216,7 +216,7 @@ An agent with SQL access over your cloud and SaaS estate has real blast radius. 
 
 ## How it works
 
-No SHAs or versions are baked into this action. At runtime it downloads the platform's `.mcpb` bundle from the stackql release proxy at `releases.stackql.io` (`releases.stackql.io/stackql/latest/...` for `latest`, otherwise `releases.stackql.io/stackql/v<version>/...`), fetches that release's matching `.sha256`, verifies the digest before extracting, and emits the `mcpServers` config. A new stackql release needs zero changes here - publish it once, point the floating `v1` tag at this action, done.
+No SHAs or versions are baked into this action. At runtime it downloads the platform's `.mcpb` bundle from the stackql release proxy at `releases.stackql.io` (`releases.stackql.io/stackql/latest/...` for `latest`, otherwise `releases.stackql.io/stackql/<version>/...`), fetches that release's matching `.sha256`, verifies the digest before extracting, and emits the `mcpServers` config. A new stackql release needs zero changes here - publish it once, point the floating `v1` tag at this action, done.
 
 The emitted server is launched cwd-independently (`--approot ${HOME}/.stackql`, audit disabled via `--mcp.config`), because MCP hosts may run with an unwritable working directory.
 

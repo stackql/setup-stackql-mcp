@@ -86,7 +86,7 @@ def main() -> None:
         base = (
             f"{RELEASE_BASE}/latest"
             if version == "latest"
-            else f"{RELEASE_BASE}/v{version}"
+            else f"{RELEASE_BASE}/{version}"
         )
         log(f"downloading {base}/{bundle_name}")
         bundle = fetch(f"{base}/{bundle_name}")
