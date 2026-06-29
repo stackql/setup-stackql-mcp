@@ -2,9 +2,10 @@
 """
 Installer for the Setup StackQL MCP Server action. Stdlib only.
 
-Downloads the platform's .mcpb bundle from the stackql GitHub release (or
-uses a local bundle via STACKQL_SETUP_BUNDLE), verifies the sha256 against
-the published .sha256 asset, extracts the stackql binary, and writes:
+Downloads the platform's .mcpb bundle from the stackql release proxy at
+releases.stackql.io (or uses a local bundle via STACKQL_SETUP_BUNDLE),
+verifies the sha256 against the published .sha256 asset, extracts the
+stackql binary, and writes:
 
   GITHUB_OUTPUT: binary-path, mcp-config (mcpServers JSON, single line)
   GITHUB_ENV:    STACKQL_MCP_BIN (so the npm/pypi wrappers skip downloading)
@@ -26,7 +27,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-RELEASE_BASE = "https://github.com/stackql/stackql/releases"
+RELEASE_BASE = "https://releases.stackql.io/stackql"
 
 
 def log(msg: str) -> None:
@@ -53,7 +54,7 @@ def platform_key() -> str:
 
 
 def fetch(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "setup-stackql-mcp"})
+    req = urllib.request.Request(url, headers={"User-Agent": "actions/setup-stackql-mcp"})
     with urllib.request.urlopen(req) as resp:
         return resp.read()
 
@@ -83,9 +84,9 @@ def main() -> None:
         bundle = Path(local_bundle).read_bytes()
     else:
         base = (
-            f"{RELEASE_BASE}/latest/download"
+            f"{RELEASE_BASE}/latest"
             if version == "latest"
-            else f"{RELEASE_BASE}/download/v{version}"
+            else f"{RELEASE_BASE}/v{version}"
         )
         log(f"downloading {base}/{bundle_name}")
         bundle = fetch(f"{base}/{bundle_name}")
