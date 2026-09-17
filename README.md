@@ -1,6 +1,13 @@
+
+
+<div align="center">
+
+[![StackQL](https://stackql.io/img/stackql-logo-bold.png)](https://github.com/stackql/stackql)
+
 [![setup stackql mcp test](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml/badge.svg)](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Setup%20StackQL%20MCP-blue?logo=github)](https://github.com/marketplace/actions/setup-stackql-mcp-server)
-[![StackQL](https://stackql.io/img/stackql-logo-bold.png)](https://github.com/stackql/stackql)
+
+</div>
 
 # setup-stackql-mcp
 
