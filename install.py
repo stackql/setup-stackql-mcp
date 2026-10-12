@@ -46,7 +46,7 @@ def platform_key() -> str:
     if os_name.startswith("linux"):
         return "linux-arm64" if is_arm else "linux-x64"
     if os_name.startswith(("windows", "win32")):
-        return "windows-x64"
+        return "windows-arm64" if is_arm else "windows-x64"
     if os_name.startswith(("macos", "darwin")):
         return "darwin-universal"
     fail(f"unsupported platform: {os_name}/{arch}")
@@ -76,7 +76,7 @@ def main() -> None:
     local_bundle = os.environ.get("STACKQL_SETUP_BUNDLE", "")
 
     key = platform_key()
-    bin_name = "stackql.exe" if key == "windows-x64" else "stackql"
+    bin_name = "stackql.exe" if key.startswith("windows-") else "stackql"
     bundle_name = f"stackql-mcp-{key}.mcpb"
 
     if local_bundle:

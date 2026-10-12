@@ -46,7 +46,7 @@ Two forms of the same config, for two consumption styles. The emitted JSON nests
 
 The action also exports `STACKQL_MCP_BIN` to the job env (the [`@stackql/mcp-server`](https://www.npmjs.com/package/@stackql/mcp-server) npm and [`stackql-mcp-server`](https://pypi.org/project/stackql-mcp-server/) PyPI wrappers detect it and skip their own download) and adds the install dir to `PATH`.
 
-It runs on `ubuntu-latest`, `windows-latest`, and `macos-latest` runners (linux-x64, linux-arm64, windows-x64, darwin-universal).
+It runs on Linux, Windows and macOS runners, including `windows-11-arm` (linux-x64, linux-arm64, windows-x64, windows-arm64, darwin-universal). Windows ARM64 runners select the native bundle using `RUNNER_ARCH`, even when Python runs under x64 emulation. Native Windows ARM64 bundles require StackQL v0.12.778 or later.
 
 ## Quick start
 

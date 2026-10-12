@@ -26,6 +26,11 @@ jobs:
         # Both the floating 'latest' and the currently pinned release. The
         # github null_auth fixture needs no secrets, so this runs credential-free.
         version: [latest, 0.10.500]
+        include:
+          - os: windows-11-arm
+            version: latest
+          - os: windows-11-arm
+            version: 0.12.778
 
     steps:
     - name: Checkout
@@ -35,6 +40,10 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: '3.12'
+        architecture: ${{ matrix.os == 'windows-11-arm' && 'x64' || '' }}
+
+    - name: Test installer
+      run: python -m unittest discover -s tests -v
 
     - name: Setup StackQL MCP
       id: setup
@@ -69,6 +78,18 @@ jobs:
       run: |
         test -x "$BIN" || { echo "binary-path is not executable: $BIN"; exit 1; }
         "$BIN" --version
+
+    - name: Verify native Windows binary architecture
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        BIN: ${{ steps.setup.outputs.binary-path }}
+      run: |
+        $bytes = [IO.File]::ReadAllBytes($env:BIN)
+        $pe = [BitConverter]::ToInt32($bytes, 0x3c)
+        $machine = [BitConverter]::ToUInt16($bytes, $pe + 4)
+        $expected = if ($env:RUNNER_ARCH -eq 'ARM64') { 0xaa64 } else { 0x8664 }
+        if ($machine -ne $expected) { throw 'Installed binary does not match runner architecture' }
 
     - name: Smoke test via emitted mcp-config
       env:
