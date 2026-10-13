@@ -1,11 +1,28 @@
-
+[stars]: https://img.shields.io/github/stars/stackql/stackql?style=flat-square "GitHub Stars"
+[logo]: https://stackql.io/img/stackql-logo-bold.png "stackql logo"
+[stackql]: https://github.com/stackql/stackql
+[homepage]: https://stackql.io/
+[downloads]: https://img.shields.io/github/downloads/stackql/stackql/total?label=github%20downloads
+[mcpregistry]: https://registry.modelcontextprotocol.io/?search=stackql
+[mcptoplist]: https://mcptoplist.com/server/io.github.stackql%2Fstackql-mcp
+[npmjsmcpregistry]: https://www.npmjs.com/package/@stackql/mcp-server
+[mcptoplistbadge]: https://mcptoplist.com/badge/io.github.stackql%2Fstackql-mcp.svg "MCP Toplist"
+[mcpregistrybadge]: https://img.shields.io/badge/MCP%20Registry-io.github.stackql%2Fstackql--mcp-blue?style=flat-square "MCP Registry"
+[mcpserver]: https://img.shields.io/npm/v/@stackql/mcp-server?style=flat-square&label=mcp%20server "MCP Server"
 
 <div align="center">
 
-[![StackQL](https://stackql.io/img/stackql-logo-bold.png)](https://github.com/stackql/stackql)
+[![logo]][homepage]  
 
-[![setup stackql mcp test](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml/badge.svg)](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml)
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Setup%20StackQL%20MCP-blue?logo=github)](https://github.com/marketplace/actions/setup-stackql-mcp-server)
+[![Marketplace](https://img.shields.io/badge/Marketplace-setup--stackql--mcp-blue?logo=github)](https://github.com/marketplace/actions/setup-stackql-mcp)
+[![Release](https://img.shields.io/github/v/release/stackql/setup-stackql-mcp)](https://github.com/stackql/setup-stackql-mcp/releases)
+[![CI](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml/badge.svg)](https://github.com/stackql/setup-stackql-mcp/actions/workflows/setup-stackql-mcp-test.yml)
+[![License](https://img.shields.io/github/license/stackql/setup-stackql-mcp)](LICENSE)
+![downloads]
+[![MCP Toplist][mcptoplistbadge]][mcptoplist]
+[![MCP Registry][mcpregistrybadge]][mcpregistry]
+[![MCP Server][mcpserver]][npmjsmcpregistry]
+[![stars]][stackql]
 
 </div>
 
